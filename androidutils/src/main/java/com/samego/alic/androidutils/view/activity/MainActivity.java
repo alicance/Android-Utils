@@ -18,6 +18,7 @@ import java.util.HashMap;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.Request;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
@@ -106,8 +107,8 @@ public class MainActivity extends AppCompatActivity {
                 File file1 = new File("/storage/sdcard1/1.png");
                 File file2 = new File("/storage/sdcard1/scs.jpg");
                 HashMap<String, File> mapFile = new HashMap<>();
-                mapFile.put("screen1",file1);
-                mapFile.put("screen2",file2);
+                mapFile.put("screen1", file1);
+                mapFile.put("screen2", file2);
                 OkHttpManager.postFormAsync("http://172.16.168.35:1010/upload.php", mapData, mapFile, new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
@@ -132,7 +133,28 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
+                
+                //原生的OkHttp方法 参数
+                Request request = new Request.Builder().build();
+                //原生的OkHttp方法 同步请求
+                OkHttpManager.execute(request);
+                //原生的OkHttp方法 异步请求 没回调
+                OkHttpManager.enqueue(request);
+                //原生的OkHttp方法 异步请求 有回调
+                OkHttpManager.enqueue(request, new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+
+                    }
+                });
             }
+
+
 
         }).start();
 

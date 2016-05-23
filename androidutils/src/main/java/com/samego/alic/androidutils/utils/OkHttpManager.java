@@ -25,6 +25,7 @@ import okhttp3.Response;
 public class OkHttpManager {
     /**
      * 静态实例
+     * 复用连接池
      */
     private static OkHttpManager okHttpManager;
 
@@ -64,6 +65,89 @@ public class OkHttpManager {
         client.newBuilder().cache(cache);
     }
 
+    //-----------------原生start----------------------
+    //原生的同步请求
+
+    /**
+     * 原生的同步请求 支持header 对外方法
+     *
+     * @param request request
+     * @return Response
+     */
+    public static Response execute(Request request) {
+        return OkHttpManager.getInstance().doExecute(request);
+    }
+
+    /**
+     * 原生的同步请求 支持header 对内方法
+     *
+     * @param request request
+     * @return Response
+     */
+    public Response doExecute(Request request) {
+        try {
+            return client.newCall(request).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //原生的异步请求 处理回调
+
+    /**
+     * 原生的异步请求 支持header 对外方法
+     *
+     * @param request  request
+     * @param callback callback
+     */
+    public static void enqueue(Request request, Callback callback) {
+        OkHttpManager.getInstance().doEnqueue(request, callback);
+    }
+
+    /**
+     * 原生的异步请求 支持header 对内方法
+     *
+     * @param request  request
+     * @param callback callback
+     */
+    public void doEnqueue(Request request, Callback callback) {
+        client.newCall(request).enqueue(callback);
+    }
+
+    //原生的异步请求 不处理回调
+
+    /**
+     * 原生的异步请求 支持header 对外方法
+     *
+     * @param request request
+     */
+    public static void enqueue(Request request) {
+        OkHttpManager.getInstance().doEnqueue(request);
+    }
+
+    /**
+     * 原生的异步请求 支持header 对内方法
+     *
+     * @param request request
+     */
+    public void doEnqueue(Request request) {
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                //todo 这里虽然存在 但是不可以做羞羞事嗒
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                //todo 这里虽然存在 但是不可以做羞羞事嗒
+
+            }
+        });
+    }
+
+
+    //-----------------原生end----------------------
 
     //GET同步请求 返回Response
 
@@ -247,21 +331,23 @@ public class OkHttpManager {
 
     /**
      * 上传一个文件 公开方法
-     * @param url url
-     * @param file file
+     *
+     * @param url      url
+     * @param file     file
      * @param callback callback
      */
-    public static void uploadFile(String url,File file,Callback callback){
-        OkHttpManager.getInstance().doUploadFile(url,file,callback);
+    public static void uploadFile(String url, File file, Callback callback) {
+        OkHttpManager.getInstance().doUploadFile(url, file, callback);
     }
 
     /**
      * 上传一个文件 内部方法
-     * @param url url
-     * @param file file
+     *
+     * @param url      url
+     * @param file     file
      * @param callback callback
      */
-    private void doUploadFile(String url,File file,Callback callback){
+    private void doUploadFile(String url, File file, Callback callback) {
         Request request = new Request.Builder()
                 .url(url)
                 .post(RequestBody.create(MEDIA_TYPE_MARKDOWN, file))
@@ -271,6 +357,7 @@ public class OkHttpManager {
     }
 
     //表单提交(带文件) 动态参数 动态文件
+
     /**
      * post 文件上传 公开方法
      *
